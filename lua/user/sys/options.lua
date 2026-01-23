@@ -1,9 +1,3 @@
---Your all definded options mustbbe added here.
--- Options are those that changes default behavior to something you want.
--- E.g vim.o.tabstop = 4
--- =====================
--- (1).Basic editor settings
--- =====================
 local o = vim.o
 vim.o.number = true
 vim.o.relativenumber = false
@@ -14,15 +8,13 @@ o.expandtab = true
 o.shiftwidth = 4
 o.tabstop = 4
 o.smartindent = true
+o.textwidth=0
 vim.opt.softtabstop = 4
 vim.opt.clipboard = "" 
 vim.cmd("filetype plugin indent on")
 -- Minimal custom tabline: show current file + indicator for more tabs
 vim.o.showtabline = 2
 
--- ======================
--- Faster Movement !
--- ======================
 vim.opt.timeoutlen = 200
 vim.opt.updatetime = 100
 vim.opt.ttimeoutlen = 10
@@ -43,18 +35,8 @@ vim.opt.spelllang = "en_us"
 
 
 
--- ======================
--- Session Requirements
--- ======================
 vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 
--- ------------------
--- True color
--- -----------------
-vim.opt.termguicolors = true
--- =====================
--- (2) Leader keys
--- =====================
 vim.g.mapleader = " "
 vim.g.maplocalleader = "'"
 

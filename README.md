@@ -1,11 +1,34 @@
-# ✨ DustNvim
+# DustNvim
 
-**The 105 Kbs Rust-focused IDE that actually works for all**  
-Fully FOSS · Lightning-fast · Zero headaches
+Bored of everyday configuration headache ? Then you are at the right place as Dust Neovim is designed to solve your everyday problem by its minimal yet modern ide like features.
 
 ---
 
-## 🌄 Take a look ....
+## Problem it solves ?
+
+Around mid of 2025 when I arrived in Neovim from Emacs I found nvim is needed to be configured from scratch. I had joined nvim to get smarter and better features and I started to configure neovim; it felt very hard and I shifted to Distro's like LunarVim but they were incompatible for my termux and this made me make my own distribution which welcomes everyone 
+
+The type of problem it solves is complex as it depends on your kind of problem as DustNvim is full of :
+
+1. Themes that any programmer deserves.
+
+2. Ui layer that shows opened buffers , tell lsp diagnostics.
+
+3. Minimal but better keybindings that include Fzf Yazi 
+
+4. Majors languages like C , Rust , Go being Already setup
+
+5. Every feature you can think of including undo_history , buffer picker , file navigation and motions , faster inbuilt terminal 
+
+6. Resonable amount of plugins with Lazy plugin manager.
+
+7. Faster startup around ~1/2.5 seconds (~400ms) even on Snapdragon-4gen-1. 
+
+8. Easy to vibe-code with ai and debug with dap.
+
+9. Less mistake chances due to on screen pop-up diagnostics on CursorHold.
+
+## Take a look ....
 ![IMG_20251213_145632](https://github.com/user-attachments/assets/f0cafcf7-5e85-426e-b689-8b0e13a1b101)
 ![IMG_20251213_142322](https://github.com/user-attachments/assets/448f5763-c4c7-4157-9d70-48baae2b0dad)
 ![IMG_20251213_144538](https://github.com/user-attachments/assets/2a345bc7-32eb-4692-ae71-45f6cfc0938b)
@@ -23,20 +46,6 @@ Fully FOSS · Lightning-fast · Zero headaches
 </details>
 
 ## 🎯 Built to solve real problems
-
-**Tired of:**
-- Heavy Downlaods ?
-- Theme breakage and plugin conflicts that waste your day?
-- Lost sessions and endless nvim configuration rabbit holes?
-- IDE-hopping fatigue and subscription walls?
-- Nvim that's either too bare or too bloated?
-- Being chained to your desktop to code?
-
-**Most importantly:** Want nvim that's lazy to configure but smart to use?
-
----
-
-## ⚡ The DustNvim difference
 
 **Zero friction development**
 - Only 105 KBS !
@@ -78,7 +87,7 @@ Fully FOSS · Lightning-fast · Zero headaches
 
 ```bash
 mkdir -p ~/.config/nv && cd ~/.config/nv
-git clone https://github.com/visrust/DustNvim.git .
+git clone --depth=1 https://github.com/visrust/DustNvim.git .
 NVIM_APPNAME=nv nvim
 ```
 
@@ -95,43 +104,38 @@ echo "alias nv='NVIM_APPNAME=nv nvim'" >> ~/.zshrc && source ~/.zshrc
 
 **Uninstall:** `rm -rf ~/.config/nv/ ~/.local/share/nv/`
 
+nvim
+└── lua --runtime folder 
+    └── user -- root use it as first arg in require(user.path.to.some)
+        ├── config -- entry to config 
+        │   ├── dap -- per language debugger goes here (for pros)
+        │   │   └── langs
+        │   ├── ide 
+        │   │   ├── file
+        │   │   └── ide
+        │   │       ├── local_module -- you add you module here (for plugin developer)
+        │   │       └── module_require -- require them here (for plugin developer)
+        │   ├── server -- add lsp server here in .lua file 
+        │   │   ├── GameDev -- godot 
+        │   │   ├── HighLevel -- py lua 
+        │   │   ├── LowLevel -- rs , C , Cpp , Zls etc 
+        │   │   ├── Productive -- marksman 
+        │   │   ├── Utilities -- docker 
+        │   │   └── Web -- Go Html Css Js 
+        │   └── tools -- add your lsp tools like other completeion engines here 
+        │       └── deprecated -- soem deperecated but useful tools 
+        ├── mini -- mini ecosys 
+        ├── snippets -- add snips in .json format
+        ├── stages -- stages call specific stages such as sys etc 
+        ├── sys -- important files 
+        │   └── inbuilt -- inbuilt important 
+        └── ui -- ui plugins stay here 
+            └── core -- currently we keep dustnvim minimal in ui 
 ---
 
-## 🎨 Architecture
+--- 
 
-**Everything you need, nothing you don't:**
-- Carefully selected plugin ecosystem
-- Intelligent defaults with escape hatches
-- `<Space>` as leader – every command flows naturally
-- 7,000+ lines refined through real-world use
+## Those who wants to contribute :
 
----
-
-## 🔧 Extend it
-
-**Add language servers:**  
-Drop configs in `./user/config/LspConfig/`
-
-**Custom snippets:**  
-Add JSON files to `./user/Snippets/`
-
-It's your editor. Make it yours.
-
----
-
-## 💎 The story
-
-One developer. Real projects. Daily driver.  
-No VC funding. No corporate agenda.
-
-Built because the alternatives either broke constantly or charged monthly. Refined over months of production use. **It works because it has to.**
-
----
-
-## 📜 License
-
-MIT – Use it, fork it, sell it, whatever.
-
----
-
-### Star it if it saves you time. Fork it if it doesn't. ⭐
+1. Follow general contribution guide 
+2. Clone with full history or first use --depth=1 and put the config into fully history cloned config.
