@@ -12,12 +12,12 @@ require('which-key').setup({
     },
 
     win = {
-        border = 'single',
+        border = 'rounded',
         wo = { winblend = 0 },
     },
 
     icons = {
-        mappings = false, -- Disable for performance
+        mappings = true, -- Disable for performance
     },
 })
 -- ============================================
