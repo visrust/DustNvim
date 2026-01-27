@@ -41,7 +41,7 @@ require('cokeline').setup({
         -- Filename + ✱ when modified
         {
             text = function(buffer)
-                local mark = buffer_modified(buffer) and ' 󰜗' or ''
+                local mark = buffer_modified(buffer) and ' [*]' or ''
                 return buffer.filename .. mark .. ' '
             end,
             underline = function(buffer)
@@ -51,7 +51,7 @@ require('cokeline').setup({
 
         -- Close button
         {
-            text = '',
+            text = '',
             on_click = function(_, _, _, _, buffer)
                 if buffer_modified(buffer) then
                     vim.notify(
