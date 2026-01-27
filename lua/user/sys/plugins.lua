@@ -381,6 +381,7 @@ require('lazy').setup({
         { 'catppuccin/nvim', },
         { 'EdenEast/nightfox.nvim', },
         { 'rose-pine/neovim', },
+        { 'folke/tokyonight.nvim'},
     },
 
     -- ============================

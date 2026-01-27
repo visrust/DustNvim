@@ -9,8 +9,8 @@ lspconfig.rust_analyzer.setup({
         ["rust-analyzer"] = {
             -- IMPORTANT: avoid Cargo path mismatches
             checkOnSave = {
-                enable = false,
-                -- command = "check", -- Set to check use clippy instead
+                enable = true,
+                command = "check", -- Set to check use clippy instead
             },
 
             -- rustc = {
