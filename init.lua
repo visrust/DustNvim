@@ -58,7 +58,7 @@ load_stages()
 -- =========================================================
 -- 3. Post-init
 -- =========================================================
-vim.cmd.colorscheme("base16-horizon-dark")
+vim.cmd.colorscheme("tokyonight-night")
 
 
 local function safe_cursor_line_fix()

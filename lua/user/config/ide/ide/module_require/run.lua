@@ -74,21 +74,3 @@ vim.keymap.set({ 'n', 't' }, '<leader>o', function()
     term.toggle('default', 'Terminal')
 end, { desc = 'Open Term' })
 
-vim.keymap.set({ 't' }, '<ESC>', function()
-    term.toggle('default', 'Terminal')
-end, { desc = 'Toggle default terminal' })
-
--- Test terminal
--- Navigation between terminals
-vim.keymap.set({ 'n', 't' }, '<leader>tn', function()
-    term.next()
-end, { desc = 'Next terminal' })
-
-vim.keymap.set({ 'n', 't' }, '<leader>tp', function()
-    term.prev()
-end, { desc = 'Previous terminal' })
-
--- Terminal selection
-vim.keymap.set({ 'n', 't' }, '<leader>ts', function()
-    term.select()
-end, { desc = 'Select terminal' })
