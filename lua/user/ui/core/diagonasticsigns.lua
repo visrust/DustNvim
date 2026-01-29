@@ -6,7 +6,7 @@ local state = {
     virtual_text = false,
     signs = true,
     underline = true,
-    auto_popup = false,
+    auto_popup = true,
 }
 
 -- Icons
@@ -38,14 +38,7 @@ local function apply()
             header = "",
             prefix = function(diagnostic, i, total)
                 local icon = icons[vim.diagnostic.severity[diagnostic.severity]:lower()] or ""
-                local prefix = i .. ". " .. icon .. " "
-                
-                -- Add separator line after each diagnostic (except the last one)
-                if i < total then
-                    prefix = prefix .. "\n" .. string.rep("─", 50) .. "\n"
-                end
-                
-                return prefix, "DiagnosticFloating" .. vim.diagnostic.severity[diagnostic.severity]
+                return i .. ". " .. icon .. " ", "DiagnosticFloating" .. vim.diagnostic.severity[diagnostic.severity]
             end,
         },
     })
@@ -129,8 +122,8 @@ function M.cycle_mode()
 end
 
 -- Keymaps (minimal - just aa and ee like you wanted)
-vim.keymap.set('n', 'aa', M.toggle_auto_popup, { desc = 'Toggle Auto Popup' })
-vim.keymap.set('n', 'ee', M.show, { desc = 'Show Diagnostic' })
+vim.keymap.set('n', 'tt', M.toggle_auto_popup, { desc = 'Toggle Auto Popup' })
+vim.keymap.set('n', 'jj', M.show, { desc = 'Show Diagnostic' })
 vim.keymap.set('n', '<leader>dt', M.toggle, { desc = 'Toggle Diagnostics' })
 vim.keymap.set('n', '<leader>dm', M.cycle_mode, { desc = 'Cycle Mode' })
 
