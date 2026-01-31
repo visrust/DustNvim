@@ -98,6 +98,7 @@ require('lazy').setup({
             }
         },
 
+
         -- rust
 
         {
@@ -276,6 +277,9 @@ require('lazy').setup({
                 { 'gcc', mode = 'n',          desc = 'Comment line' },
                 { 'gc',  mode = { 'n', 'v' }, desc = 'Comment' },
             },
+        },
+        {
+            { 'akinsho/toggleterm.nvim', version = '*', config = true },
         },
 
         -- ===========================

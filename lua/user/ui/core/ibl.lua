@@ -49,7 +49,7 @@ require('mini.indentscope').setup({
       goto_top = '[s',
       goto_bottom = ']s',
     },
-    symbol = '│',  -- matches ibl for consistency
+    symbol = '┃',  -- matches ibl for consistency
     
     options = {
         try_as_border = true,

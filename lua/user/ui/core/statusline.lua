@@ -2,7 +2,7 @@ local lualine = require("lualine")
 
 lualine.setup({
   options = {
-    theme = "catppuccin-macchiato",          -- auto-detect colorscheme
+    theme = "auto",          -- auto-detect colorscheme
     globalstatus = true,     -- single statusline (NvChad style)
     icons_enabled = true,
     section_separators = { left = "", right = "" },
