@@ -69,4 +69,4 @@ vim.api.nvim_create_autocmd('ColorScheme', {
 
 -- Link to existing highlight groups for theme consistency
 vim.api.nvim_set_hl(0, 'IblIndent', { link = 'NonText' })
-vim.api.nvim_set_hl(0, 'MiniIndentscopeSymbol', { link = 'Special' })
+vim.api.nvim_set_hl(0, 'MiniIndentscopeSymbol', { link = 'NonText' })
