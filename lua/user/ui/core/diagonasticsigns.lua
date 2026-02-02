@@ -1,105 +1,131 @@
 
--------------------------------------------------
--- 1. Global Diagnostic UI Settings
--------------------------------------------------
-local diag_icons = {
-    Error = " ",
-    Warn  = " ",
-    Hint  = " ",
-    Info  = " ",
-}
+--------------------------------------------------------------------------------
+-- DYNAMIC STEALTH ECHO: Final "No-Confirm" Version
+--------------------------------------------------------------------------------
 
-for type, icon in pairs(diag_icons) do
-    local hl = "DiagnosticSign" .. type
-    vim.fn.sign_define(hl, { text = icon, texthl = hl, numhl = "" })
-end
 
--- THE TRICK: Set the background but explicitly disable the line
-local function set_diag_highlights()
-    -- bg = The color of the "block"
-    -- underline = false (removes the straight line)
-    -- undercurl = false (removes the wavy line)
-    vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { bg = "#4b252c", underline = false, undercurl = false })
-    vim.api.nvim_set_hl(0, "DiagnosticUnderlineWarn",  { bg = "#423824", underline = false, undercurl = false })
-    vim.api.nvim_set_hl(0, "DiagnosticUnderlineHint",  { bg = "#243a3a", underline = false, undercurl = false })
-    vim.api.nvim_set_hl(0, "DiagnosticUnderlineInfo",  { bg = "#242e3a", underline = false, undercurl = false })
-end
+-- Define the icons you want to see in the gutter
+local icons = { Error = " ", Warn = " ", Hint = "󰌶 ", Info = " " }
 
-set_diag_highlights()
-
-vim.api.nvim_create_autocmd("ColorScheme", {
-    callback = set_diag_highlights,
+-- Apply both the Icon (text) and the Full Line Highlight (linehl)
+vim.fn.sign_define("DiagnosticSignError", { 
+    text = icons.Error, 
+    texthl = "DiagnosticSignError", 
+    linehl = "DiagnosticLineError" 
 })
+vim.fn.sign_define("DiagnosticSignWarn",  { 
+    text = icons.Warn,  
+    texthl = "DiagnosticSignWarn",  
+    linehl = "DiagnosticLineWarn"  
+})
+vim.fn.sign_define("DiagnosticSignInfo",  { 
+    text = icons.Info,  
+    texthl = "DiagnosticSignInfo",  
+    linehl = "DiagnosticLineInfo"  
+})
+vim.fn.sign_define("DiagnosticSignHint",  { 
+    text = icons.Hint,  
+    texthl = "DiagnosticSignHint",  
+    linehl = "DiagnosticLineHint"  
+})
+
+
+-- 1. Optimized Highlights
+local function set_diag_hl()
+    vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { bg = "#3b2025", underline = false })
+    vim.api.nvim_set_hl(0, "DiagnosticUnderlineWarn",  { bg = "#322d1b", underline = false })
+    vim.api.nvim_set_hl(0, "DiagnosticUnderlineHint",  { bg = "#1a2b2b", underline = false })
+    vim.api.nvim_set_hl(0, "DiagnosticUnderlineInfo",  { bg = "#1a212e", underline = false })
+end
+
+set_diag_hl()
+vim.api.nvim_create_autocmd("ColorScheme", { callback = set_diag_hl })
+
+-- 2. The Logic
+local echo_timer = vim.loop.new_timer()
+
+local function dynamic_stealth_echo()
+    if not vim.api.nvim_buf_is_valid(0) then return end
+    
+    local line = vim.api.nvim_win_get_cursor(0)[1] - 1
+    local diags = vim.diagnostic.get(0, { lnum = line })
+    
+    if #diags == 0 then
+        if vim.o.cmdheight ~= 1 then 
+            vim.o.cmdheight = 1 
+            vim.cmd.redraw()
+        end
+        vim.api.nvim_echo({}, false, {})
+        return
+    end
+
+    table.sort(diags, function(a, b) return a.severity < b.severity end)
+    local d = diags[1]
+    local severity_map = { [1] = "Error", [2] = "Warn", [3] = "Info", [4] = "Hint" }
+    local hl = "Diagnostic" .. severity_map[d.severity]
+    local icon = icons[severity_map[d.severity]]
+
+    
+-- 1. Get the message
+local raw_msg = d.message
+
+-- 2. Replace newlines with spaces
+raw_msg = raw_msg:gsub("\n", " ")
+
+-- 3. THE FIX: Collapse multiple spaces/tabs into a single space
+-- %s+ matches one or more whitespace characters
+raw_msg = raw_msg:gsub("%s%s+", " ")
+
+-- 4. Trim leading/trailing whitespace just in case
+raw_msg = vim.trim(raw_msg)
+
+-- 5. Build final message
+local full_msg = icon .. "  " .. raw_msg
+    local screen_width = vim.o.columns
+    local message_len = #full_msg
+    
+    -- Logic Chain: 
+    -- We use a 10-character buffer to be absolutely safe from the hit-enter prompt
+    local target_height = 1
+    if message_len >= (screen_width - 10) then
+        target_height = 2
+    end
+
+    -- Update UI
+    if vim.o.cmdheight ~= target_height then
+        vim.o.cmdheight = target_height
+        -- Crucial: Redraw right now so the echo doesn't collide with the resize
+        vim.cmd.redraw()
+    end
+
+    -- Cap the message to the available space of the target height
+    local max_cap = (screen_width * target_height) - 15
+    if message_len > max_cap then
+        full_msg = full_msg:sub(1, max_cap) .. "..."
+    end
+
+    vim.api.nvim_echo({ { full_msg, hl } }, false, {})
+end
+
+local safe_echo = vim.schedule_wrap(dynamic_stealth_echo)
+
+vim.api.nvim_create_autocmd({ "CursorMoved" }, {
+    callback = function()
+        echo_timer:stop()
+        echo_timer:start(20, 0, safe_echo)
+    end,
+})
+
+-- 3. The "Silence" Settings
+-- 'F' hides the "Hit ENTER" for messages that don't fit
+-- 'W' hides "written" messages
+-- 'c' hides completion messages
+vim.opt.shortmess:append("AFWc") 
 
 vim.diagnostic.config({
-    -- We keep this 'true' so Neovim applies the highlight groups to the text
-    underline = true, 
     virtual_text = false,
+    underline = true,
+    signs = true,
     severity_sort = true,
-    float = {
-        border = "rounded",
-        source = "always",
-        header = "",
-        prefix = "",
-        format = function(d)
-            local icon = diag_icons[vim.diagnostic.severity[d.severity]:gsub("^%l", string.upper)] or ""
-            return string.format("%s %s", icon, d.message)
-        end,
-    },
+    update_in_insert = false,
 })
-
--------------------------------------------------
--- 2. State & Auto-commands (Unchanged)
--------------------------------------------------
-local diag_enabled = true
-local group = vim.api.nvim_create_augroup("SmartDiagFloat", { clear = true })
-
-local function open_smart_float()
-    local _, winid = vim.diagnostic.open_float(nil, {
-        focusable = false,
-        scope = "line",
-        relative = "editor",
-        row = 1,
-        col = vim.o.columns - 2,
-        anchor = "NE",
-        width = math.floor(vim.o.columns * 0.45),
-    })
-    
-    if winid then
-        vim.wo[winid].winblend = 5
-        vim.wo[winid].wrap = true
-    end
-end
-
-local function setup_autocmds()
-    vim.api.nvim_clear_autocmds({ group = group })
-    if diag_enabled then
-        vim.api.nvim_create_autocmd("CursorHold", {
-            group = group,
-            callback = open_smart_float,
-        })
-    end
-end
-
--------------------------------------------------
--- 3. Toggle & Keymaps (Unchanged)
--------------------------------------------------
-_G.toggle_diag_panel = function()
-    diag_enabled = not diag_enabled
-    setup_autocmds()
-    if not diag_enabled then
-        for _, win in ipairs(vim.api.nvim_list_wins()) do
-            local conf = vim.api.nvim_win_get_config(win)
-            if conf.relative ~= "" and conf.zindex == 45 then 
-                vim.api.nvim_win_close(win, true)
-            end
-        end
-    end
-    print("Diag panel: " .. (diag_enabled and "ON" or "OFF"))
-end
-
-vim.keymap.set("n", "<leader>tp", _G.toggle_diag_panel, { desc = "Toggle diag panel" })
-vim.keymap.set("n", "tt", open_smart_float, { desc = "Show line diagnostics" })
-
-vim.opt.updatetime = 200
-setup_autocmds()
