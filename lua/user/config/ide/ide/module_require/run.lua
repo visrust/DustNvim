@@ -20,15 +20,9 @@ local function run_filetype_command()
     local cmd = nil
 
     if ft == 'rust' then
-        cmd = 'cargo run'
+        cmd = 'time cargo run'
     elseif ft == 'zig' then
-        -- Smart Zig runner: detects if you're in a project or standalone file
-        local build_file = vim.fn.findfile('build.zig', '.;')
-        if build_file ~= '' then
-            cmd = 'zig build run'         -- Project with build.zig
-        else
-            cmd = 'zig run ' .. file_name -- Standalone file
-        end
+        cmd = 'cd ' .. file_dir .. ' && time zig build-exe ' .. file_name
     elseif ft == 'python' then
         cmd = 'python3 ' .. file_name
     elseif ft == 'lua' then
