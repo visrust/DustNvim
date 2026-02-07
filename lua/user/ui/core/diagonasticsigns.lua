@@ -1,11 +1,15 @@
 --------------------------------------------------------------------------------
--- DYNAMIC STEALTH ECHO: Final "No-Confirm" Version
+-- DYNAMIC STEALTH ECHO: Smart Wrapping Version
 --------------------------------------------------------------------------------
 
+-- Read this before taking any step !
+-- This is intentional design to keep buffer minimal + text focused , rather than making it show big pop ups.
+-- Use `tt` to see severity of current line below Error's 
+-- tt was needed as this configuration will give higher priority to higher diagnostic levels such as Error/Warning. 
+-- by default the echo area can at max go to height of a whole 10 lines , which is already a lot to handle massive errors. But make sure if errors and warnings exists on same line then use `tt` to see Warnings and lower severity.
 
 -- Define the icons you want to see in the gutter
 local icons = { Error = ' ', Warn = ' ', Hint = '󰌶 ', Info = ' ' }
-
 
 -- 2. The Logic
 local echo_timer = vim.loop.new_timer()
@@ -31,51 +35,60 @@ local function dynamic_stealth_echo()
     local hl = 'Diagnostic' .. severity_map[d.severity]
     local icon = icons[severity_map[d.severity]]
 
-
-    -- 1. Get the message
+    -- 1. Clean the message
     local raw_msg = d.message
+    raw_msg = raw_msg:gsub('\n', ' ')      -- Replace newlines with spaces
+    raw_msg = raw_msg:gsub('%s+', ' ')     -- Collapse multiple spaces
+    raw_msg = vim.trim(raw_msg)            -- Trim edges
 
-    -- 2. Replace newlines with spaces
-    raw_msg = raw_msg:gsub('\n', ' ')
-
-    -- 3. THE FIX: Collapse multiple spaces/tabs into a single space
-    -- %s+ matches one or more whitespace characters
-    raw_msg = raw_msg:gsub('%s%s+', ' ')
-
-    -- 4. Trim leading/trailing whitespace just in case
-    raw_msg = vim.trim(raw_msg)
-
-    -- 5. Build final message
-    local full_msg = icon .. '  ' .. raw_msg
+    -- 2. Build the full message with icon
+    local full_msg = icon .. ' :' .. raw_msg
+    
+    -- 3. Calculate required height dynamically
     local screen_width = vim.o.columns
-    local message_len = #full_msg
+    local msg_len = vim.fn.strdisplaywidth(full_msg)  -- Use display width for proper calculation
+    
+    -- Account for padding and safety margin (12 chars for safety)
+    local usable_width = screen_width - 12
+    
+    -- Calculate how many lines we need
+    local required_height = math.ceil(msg_len / usable_width)
+    
+    -- Cap at reasonable maximum (e.g., 5 lines)
+    local target_height = math.min(required_height, 10) -- increase/decrease
+    target_height = math.max(target_height, 1)  -- At least 1 line
 
-    -- Logic Chain:
-    -- We use a 10-character buffer to be absolutely safe from the hit-enter prompt
-    local target_height = 1
-    if message_len >= (screen_width - 10) then
-        target_height = 2
-    end
-
-    -- Update UI
+    -- 4. Update cmdheight if needed
     if vim.o.cmdheight ~= target_height then
         vim.o.cmdheight = target_height
-        -- Crucial: Redraw right now so the echo doesn't collide with the resize
         vim.cmd.redraw()
     end
 
-    -- Cap the message to the available space of the target height
-    local max_cap = (screen_width * target_height) - 15
-    if message_len > max_cap then
-        full_msg = full_msg:sub(1, max_cap) .. '...'
+    -- 5. Truncate message if it's still too long
+    local max_chars = (usable_width * target_height)
+    if msg_len > max_chars then
+        -- Truncate using display width aware function
+        local truncated = ''
+        local current_width = 0
+        for char in full_msg:gmatch('.') do
+            local char_width = vim.fn.strdisplaywidth(char)
+            if current_width + char_width > max_chars - 3 then
+                truncated = truncated .. '...'
+                break
+            end
+            truncated = truncated .. char
+            current_width = current_width + char_width
+        end
+        full_msg = truncated
     end
 
+    -- 6. Display the message
     vim.api.nvim_echo({ { full_msg, hl } }, false, {})
 end
 
 local safe_echo = vim.schedule_wrap(dynamic_stealth_echo)
 
-vim.api.nvim_create_autocmd({ 'CursorMoved' }, {
+vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
     callback = function()
         echo_timer:stop()
         echo_timer:start(20, 0, safe_echo)
@@ -83,9 +96,6 @@ vim.api.nvim_create_autocmd({ 'CursorMoved' }, {
 })
 
 -- 3. The "Silence" Settings
--- 'F' hides the "Hit ENTER" for messages that don't fit
--- 'W' hides "written" messages
--- 'c' hides completion messages
 vim.opt.shortmess:append('AFWc')
 
 vim.diagnostic.config({
@@ -118,3 +128,47 @@ vim.api.nvim_set_hl(0, "DiagnosticUnderlineUnnecessary", {
     undercurl = false,
     underline = false,
 })
+
+-- Fixed keymaps (you had both mapped to <M-j>)
+vim.keymap.set('n', '<M-j>', function() vim.diagnostic.jump({count = 1}) end, {desc = "next diagnostic"})
+vim.keymap.set('n', '<M-k>', function() vim.diagnostic.jump({count = -1}) end, {desc = "prev diagnostic"})
+
+-- Show non-error diagnostics in a float (Warning + Hint + Info only)
+vim.keymap.set('n', 'tt', function()
+    local line = vim.api.nvim_win_get_cursor(0)[1] - 1
+    local all_diags = vim.diagnostic.get(0, { lnum = line })
+    
+    -- Filter out errors
+    local non_error_diags = {}
+    for _, d in ipairs(all_diags) do
+        if d.severity ~= vim.diagnostic.severity.ERROR then
+            table.insert(non_error_diags, d)
+        end
+    end
+    
+    if #non_error_diags == 0 then
+        vim.notify("No warnings, hints, or info on this line", vim.log.levels.INFO)
+        return
+    end
+    
+    -- Create a temporary namespace with only non-error diagnostics
+    local ns = vim.api.nvim_create_namespace('non_error_diags')
+    vim.diagnostic.set(ns, 0, non_error_diags, {})
+    
+    -- Show the float with scrolling enabled
+    vim.diagnostic.open_float({
+        border = 'rounded',
+        focusable = true,  -- Changed to true to enable scrolling
+        focus = false,     -- Don't auto-focus, but allow manual focus
+        source = 'always',
+        namespace = ns,
+        severity_sort = true,
+        max_width = 80,    -- Set max width
+        max_height = 20,   -- Set max height for scrolling
+    })
+    
+    -- Clear the temporary namespace after showing
+    vim.defer_fn(function()
+        vim.diagnostic.reset(ns, 0)
+    end, 100)
+end, { desc = "Show warnings/hints/info (no errors)" })
