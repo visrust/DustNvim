@@ -2,9 +2,13 @@
 
 <div align="center">
 
-**🦀 A blazing-fast Neovim distribution built for speed and simplicity.**
+    **🦀 Dust Nvim is a Neovim configuration that aims to provide an IDE-like experience while preserving Neovim’s minimalism. Supports multiple languages out of the box, promotes a cleaner code culture, and enables smarter, less noisy coding.**
 
-**Sub-400ms startup • 63 plugins • 20 LSP servers • 5 theme collections • Zero bloat.**
+**Sub-400ms startup**
+**63 plugins**
+**20 LSP servers**
+**5 theme collections**
+**Zero bloat**
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Neovim](https://img.shields.io/badge/neovim-0.10+-green.svg)](https://neovim.io)
