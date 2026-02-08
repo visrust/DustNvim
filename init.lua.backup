@@ -60,7 +60,7 @@ load_stages()
 -- =========================================================
 -- 3. Post-init
 -- =========================================================
-vim.cmd.colorscheme('nightfox')
+vim.cmd.colorscheme('tokyonight-night')
 
 
 local function safe_cursor_line_fix()
@@ -115,30 +115,41 @@ vim.api.nvim_create_autocmd('ColorScheme', {
         end)
     end,
 })
-
--- Base group
-vim.api.nvim_set_hl(0, 'DiagnosticUnnecessary', { link = 'DiagnosticWarn' })
-
--- Explicitly disable underline
-vim.api.nvim_set_hl(0, 'DiagnosticUnderlineUnnecessary', {
-    underline = false,
-    undercurl = false,
-    sp = 'NONE',
-})
-
-local function bold_diag_underline(name, target)
-    local hl = vim.api.nvim_get_hl(0, { name = target, link = false })
-
-    vim.api.nvim_set_hl(0, name, {
-        fg = hl.fg,
-        sp = hl.fg,
-        bold = true,
-        underline = true,
+local function apply_diag_hls()
+    -- Unnecessary: no underline, standout, pure white
+    vim.api.nvim_set_hl(0, 'DiagnosticUnnecessary', {
+        fg = "#ffffff",
+        standout = true,
+        nocombine = true,
     })
+
+    -- Explicitly ensure no underline
+    vim.api.nvim_set_hl(0, 'DiagnosticUnderlineUnnecessary', {
+        underline = false,
+        undercurl = false,
+        sp = 'NONE',
+        nocombine = true,
+    })
+
+    local function bold_diag_underline(name, target)
+        vim.api.nvim_set_hl(0, name, {
+            fg = "#ffffff",
+            sp = "#ffffff",
+            bold = true,
+            underline = false,
+            standout = true,
+            nocombine = true,
+        })
+    end
+
+    bold_diag_underline('DiagnosticUnderlineError', 'DiagnosticError')
+    bold_diag_underline('DiagnosticUnderlineWarn',  'DiagnosticWarn')
+    bold_diag_underline('DiagnosticUnderlineInfo',  'DiagnosticInfo')
+    bold_diag_underline('DiagnosticUnderlineHint',  'DiagnosticHint')
 end
 
--- Apply ONLY to severities that should underline
-bold_diag_underline('DiagnosticUnderlineError', 'DiagnosticError')
-bold_diag_underline('DiagnosticUnderlineWarn',  'DiagnosticWarn')
-bold_diag_underline('DiagnosticUnderlineInfo',  'DiagnosticInfo')
-bold_diag_underline('DiagnosticUnderlineHint',  'DiagnosticHint')
+vim.api.nvim_create_autocmd('ColorScheme', {
+    callback = apply_diag_hls,
+})
+
+apply_diag_hls()

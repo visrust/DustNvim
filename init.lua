@@ -104,7 +104,8 @@ if not ok then
     vim.notify('CursorLine fix failed: ' .. tostring(err), vim.log.levels.WARN)
 end
 
-
+local function apply_diag_hls()
+    
 vim.api.nvim_create_autocmd('ColorScheme', {
     callback = function()
         vim.schedule(function()
@@ -121,7 +122,8 @@ vim.api.nvim_set_hl(0, 'DiagnosticUnnecessary', { link = 'DiagnosticWarn' })
 
 -- Explicitly disable underline
 vim.api.nvim_set_hl(0, 'DiagnosticUnderlineUnnecessary', {
-    underline = false,
+    underline = true,
+    nocombine = true,
     undercurl = false,
     sp = 'NONE',
 })
@@ -134,6 +136,7 @@ local function bold_diag_underline(name, target)
         sp = hl.fg,
         bold = true,
         underline = true,
+        standout = true,
     })
 end
 
@@ -142,3 +145,13 @@ bold_diag_underline('DiagnosticUnderlineError', 'DiagnosticError')
 bold_diag_underline('DiagnosticUnderlineWarn',  'DiagnosticWarn')
 bold_diag_underline('DiagnosticUnderlineInfo',  'DiagnosticInfo')
 bold_diag_underline('DiagnosticUnderlineHint',  'DiagnosticHint')
+
+end
+
+vim.api.nvim_create_autocmd('ColorScheme', {
+    callback = apply_diag_hls,
+})
+
+-- apply once at startup
+apply_diag_hls()
+
