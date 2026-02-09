@@ -133,42 +133,21 @@ vim.api.nvim_set_hl(0, "DiagnosticUnderlineUnnecessary", {
 vim.keymap.set('n', '<M-j>', function() vim.diagnostic.jump({count = 1}) end, {desc = "next diagnostic"})
 vim.keymap.set('n', '<M-k>', function() vim.diagnostic.jump({count = -1}) end, {desc = "prev diagnostic"})
 
--- Show non-error diagnostics in a float (Warning + Hint + Info only)
 vim.keymap.set('n', 'tt', function()
     local line = vim.api.nvim_win_get_cursor(0)[1] - 1
-    local all_diags = vim.diagnostic.get(0, { lnum = line })
     
-    -- Filter out errors
-    local non_error_diags = {}
-    for _, d in ipairs(all_diags) do
-        if d.severity ~= vim.diagnostic.severity.ERROR then
-            table.insert(non_error_diags, d)
-        end
-    end
-    
-    if #non_error_diags == 0 then
-        vim.notify("No warnings, hints, or info on this line", vim.log.levels.INFO)
-        return
-    end
-    
-    -- Create a temporary namespace with only non-error diagnostics
-    local ns = vim.api.nvim_create_namespace('non_error_diags')
-    vim.diagnostic.set(ns, 0, non_error_diags, {})
-    
-    -- Show the float with scrolling enabled
+    -- Open float with a filter function instead of a temp namespace
     vim.diagnostic.open_float({
         border = 'rounded',
-        focusable = true,  -- Changed to true to enable scrolling
-        focus = false,     -- Don't auto-focus, but allow manual focus
+        focusable = true,
         source = 'always',
-        namespace = ns,
         severity_sort = true,
-        max_width = 80,    -- Set max width
-        max_height = 20,   -- Set max height for scrolling
+        -- This is the key: filter diagnostics on the fly
+        filter = function(d)
+            return d.severity ~= vim.diagnostic.severity.ERROR
+        end,
+        -- Check if any non-error diagnostics exist before showing empty box
+        check_out_of_range = true,
     })
-    
-    -- Clear the temporary namespace after showing
-    vim.defer_fn(function()
-        vim.diagnostic.reset(ns, 0)
-    end, 100)
 end, { desc = "Show warnings/hints/info (no errors)" })
+
