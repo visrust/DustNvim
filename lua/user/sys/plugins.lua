@@ -370,11 +370,11 @@ require('lazy').setup({
         -- ===========================
         -- Mini.nvim Suite
         -- ===========================
-        {
-            'nvim-mini/mini.indentscope',
-            commit = '0308f94',
-            event = 'BufReadPost',
-        },
+        -- {
+        --     'nvim-mini/mini.indentscope',
+        --     commit = '0308f94',
+        --     event = 'BufReadPost',
+        -- },
         {
             'nvim-mini/mini.notify',
             commit = '29ec27f',
