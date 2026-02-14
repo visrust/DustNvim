@@ -1,3 +1,19 @@
+vim.diagnostic.config({
+  signs = {
+    text = {
+      [vim.diagnostic.severity.ERROR] = "●",
+      [vim.diagnostic.severity.WARN]  = "●",
+      [vim.diagnostic.severity.INFO]  = "●",
+      [vim.diagnostic.severity.HINT]  = "●",
+    },
+  },
+  underline = true,
+  virtual_text = false,
+})
+
+vim.opt.signcolumn = "yes"
+
+
 require("tiny-inline-diagnostic").setup({
     -- Choose a preset style for diagnostic appearance
     -- Available: "modern", "classic", "minimal", "powerline", "ghost", "simple", "nonerdfont", "amongus"
@@ -134,3 +150,5 @@ require("tiny-inline-diagnostic").setup({
         },
     },
 })
+
+map('n', 'gl', '<cmd>TinyInlineDiag toggle<cr>')
